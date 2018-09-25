@@ -4,6 +4,7 @@
 #include <iostream>
 #include <gtest/gtest.h>
 
+#include <crtdbg.h> 
 
 class point final {
 public:
@@ -21,21 +22,21 @@ public:
 bool operator == (const point& p1, const point&p2) {
 	return(p1.x == p2.x && p1.y == p2.y);
 }
-//
-//class PoolTesting : public ::testing::Test {
-//public:
-//	virtual void SetUp(void) {
-//		pool<point> pointpool(10);
-//
-//		// настройка перед запуском очередного теста
-//	}
-//	virtual void TearDown(void) {
-//		// очистка после прогона очередного теста
-//	}
-//	int amount = 10;
-//};
-//
-TEST(PoolTesting, Point) {
+
+class PoolTesting : public ::testing::Test {
+public:
+	virtual void SetUp(void) {
+		_CrtMemCheckpoint(&startup);
+	}
+	virtual void TearDown(void) {
+		_CrtMemState teardown, diff;
+		_CrtMemCheckpoint(&teardown);
+		ASSERT_EQ(0, _CrtMemDifference(&diff, &startup, &teardown)) << "Memory leaks detected";
+	}
+	_CrtMemState startup;
+};
+
+TEST_F(PoolTesting, Point) {
 	pool<point> pointpool(10);
 	point temp;
 	point* pi = &temp;
@@ -54,7 +55,7 @@ TEST(PoolTesting, Point) {
 	}
 }
 
-TEST(PoolTesting, PointVarAlloc) {
+TEST_F(PoolTesting, PointVarAlloc) {
 	pool<point> pointpool(10);
 	point temp;
 	point* pi = &temp;
@@ -67,7 +68,7 @@ TEST(PoolTesting, PointVarAlloc) {
 	}
 }
 
-TEST(PoolTesting, Int) {
+TEST_F(PoolTesting, Int) {
 	pool<int> intpool(10);
 	int temp;
 	int* pi = &temp;
@@ -86,7 +87,7 @@ TEST(PoolTesting, Int) {
 	}
 }
 
-TEST(PoolTesting, IntThrows) {
+TEST_F(PoolTesting, IntThrows) {
 	pool<int> intpool(1);
 	int * pi = intpool.alloc();
 	ASSERT_ANY_THROW(pi = intpool.alloc());
