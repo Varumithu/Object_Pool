@@ -76,7 +76,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Programming\oop\googletest-master\googletest-master\googletest;D:\Programming\oop\googletest-master\googletest-master\googletest\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Programming\oop\template_sort\template_selsort;D:\Programming\oop\googletest-master\googletest-master\googletest;D:\Programming\oop\googletest-master\googletest-master\googletest\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -119,11 +119,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\template_sort\template_selsort\persons.h" />
     <ClInclude Include="pool.h" />
     <ClInclude Include="poolex.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\googletest-master\googletest-master\googletest\src\gtest-all.cc" />
+    <ClCompile Include="..\..\template_sort\template_selsort\person.cpp" />
     <ClCompile Include="test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
