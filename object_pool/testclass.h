@@ -18,6 +18,7 @@ public:
 class stupidString final {
 public:
 	char * str;
+	stupidString();
 	stupidString(const char * str);
 	stupidString(const stupidString& that); // copy
 	stupidString(stupidString&& that);//move

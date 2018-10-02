@@ -3,6 +3,7 @@
 
 #include <exception>
 #include <set>
+#include <cstring>
 
 #include "poolex.h"
 
@@ -11,6 +12,10 @@ class pool final {
 private:
 	using type = std::remove_reference_t<T>;
 	std::set<type*> free_pointers;
+	T * place;
+	size_t occupied;
+	size_t amount;
+
 public:
 	pool(size_t amount){
 		this->place = static_cast<type*>(operator new[](amount * sizeof(T)));
@@ -22,16 +27,22 @@ public:
 	}
 	~pool() {
 		for (size_t i = 0; i < occupied; ++i) {
-			(place + i)->~type();
+			if (this->free_pointers.find(this->place + i) == this->free_pointers.end()) {
+				(place + i)->~type();
+			}
 		}
-		delete[] this->place;
+		operator delete[] (this->place);
 	}
-	type * alloc() {
-		if (occupied < amount){
-			type* poi = *(this->free_pointers.begin());
+
+
+	template<typename U = type>
+	std::enable_if_t<std::is_array_v<U>, U*>
+	alloc(U* that) {
+		if (occupied < amount) {
+			U* poi = *(this->free_pointers.begin());
 			this->free_pointers.erase(this->free_pointers.begin());
 			++occupied;
-			*poi = type();
+			std::memmove(poi, that, sizeof(U));
 			return poi;
 		}
 		else {
@@ -40,13 +51,13 @@ public:
 		}
 	}
 
-	template <typename... Args>
-	type * alloc(Args... args) {
+	template <typename U = type, typename... Args>
+	std::enable_if_t<!std::is_array_v<U>, U*>  alloc(Args... args) {
 		if (occupied < amount) {
-			type* poi = *(this->free_pointers.begin());
+			U* poi = *(this->free_pointers.begin());
 			this->free_pointers.erase(this->free_pointers.begin());
 			++occupied;
-			*poi = type(args...);
+			new (poi) U(args...);
 			return poi;
 		}
 		else {
@@ -54,6 +65,7 @@ public:
 			throw ex;
 		}
 	}
+
 
 	void free(type* obj) {
 		if (obj >= this->place && obj < this->place + amount) {
@@ -69,28 +81,7 @@ public:
 	type& operator [] (size_t ind) {
 		return *(place + ind);
 	}
-private:
-	T * place;
-	size_t occupied;
-	size_t amount;
 
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif // ! _MYPOOLDOTH_

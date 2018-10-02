@@ -34,3 +34,8 @@ stupidString& stupidString::operator=(const stupidString& that) {
 	std::copy(str, str + length, this->str);
 	return *this;
 }
+
+stupidString::stupidString() {
+	this->length = 0;
+	this->str = nullptr;
+}

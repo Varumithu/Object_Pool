@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <gtest/gtest.h>
+#include <string>
 
 #include <crtdbg.h> 
 
@@ -27,80 +28,127 @@ public:
 	_CrtMemState startup;
 };
 
-TEST_F(PoolTesting, CharAsterTest) {
-	pool<char*> charastpool(10);
+//TEST_F(PoolTesting, CharAsterTest) {
+//	pool<const char*> charastpool(10);
+//	for (size_t i = 0; i < 10; ++i) {
+//		charastpool.alloc("gsg");
+//	}
+//	for (size_t i = 5; i < 9; ++i) {
+//		charastpool.free(&charastpool[i]);
+//	}
+//	for (size_t i = 0; i < 4; ++i) {
+//		charastpool.alloc("gsg");
+//	}
+//	for (size_t i = 0; i < 10; ++i) {
+//		charastpool.free(&charastpool[i]);
+//	}
+//}
+
+TEST_F(PoolTesting, ArrayTest) {
+	pool<int[3]> arpool(10);
+	int a[3]{ 1, 2, 3 };
 	for (size_t i = 0; i < 10; ++i) {
-		charastpool.alloc("gsg");
-	}
-	for (size_t i = 5; i < 9; ++i) {
-		charastpool.free(&charastpool[i]);
-	}
-	for (size_t i = 0; i < 4; ++i) {
-		charastpool.alloc("gsg");
-	}
-	for (size_t i = 0; i < 10; ++i) {
-		charastpool.free(&charastpool[i]);
+		arpool.alloc(&a);
 	}
 }
 
-//TEST_F(PoolTesting, Point) {
-//	pool<point> pointpool(10);
-//	point temp;
-//	point* pi = &temp;
-//	for (size_t i = 0; i < 10; ++i) {
-//		pi = pointpool.alloc();
-//		*pi = point(i, i);
-//		ASSERT_EQ(*pi, point(i, i));
-//	}
-//	for (size_t i = 0; i < 10; ++i) {
-//		ASSERT_NO_THROW(pointpool.free(pi - i));
-//	}
-//	for (size_t i = 0; i < 10; ++i) {
-//		pi = pointpool.alloc();
-//		*pi = point(i, i);
-//		ASSERT_EQ(*pi, point(i, i));
-//	}
-//}
-//
-//TEST_F(PoolTesting, PointVarAlloc) {
-//	pool<point> pointpool(10);
-//	point temp;
-//	point* pi = &temp;
-//	for (size_t i = 0; i < 10; ++i) {
-//		pi = pointpool.alloc(i, i);
-//		ASSERT_EQ(*pi, point(i, i));
-//	}
-//	for (size_t i = 0; i < 10; ++i) {
-//		ASSERT_NO_THROW(pointpool.free(pi - i));
-//	}
-//}
-//
-//TEST_F(PoolTesting, Int) {
-//	pool<int> intpool(10);
-//	int temp;
-//	int* pi = &temp;
-//	for (size_t i = 0; i < 10; ++i) {
-//		pi = intpool.alloc();
-//		*pi = i;
-//		ASSERT_EQ(*pi, i);
-//	}
-//	for (size_t i = 0; i < 10; ++i) {
-//		ASSERT_NO_THROW(intpool.free(pi - i));
-//	}
-//	for (size_t i = 0; i < 10; ++i) {
-//		pi = intpool.alloc();
-//		*pi = i;
-//		ASSERT_EQ(*pi, i);
-//	}
-//}
-//
-//TEST_F(PoolTesting, IntThrows) {
-//	pool<int> intpool(1);
-//	int * pi = intpool.alloc();
-//	ASSERT_ANY_THROW(pi = intpool.alloc());
-//	int out;
-//	ASSERT_ANY_THROW(intpool.free(&out));
-//}
+TEST_F(PoolTesting, StupidStringTest) {
+	pool<stupidString> sspool(10); 
+	char a[] = "abc", b[] = "bcd", c[] = "cde", d[] = "def";
+	for (size_t i = 0; i < 10; ++i) {
+		//switch (i % 4) {
+		//	case 0: sspool.alloc(a);
+		//	        break;
+		//	case 1: sspool.alloc(b);
+		//		    break;
+		//	case 2: sspool.alloc(c);
+		//			break;
+		//	case 3: sspool.alloc(d);
+		//			break;
+		//}
+		ASSERT_NO_THROW(sspool.alloc(a));
+	}
+
+}
+
+TEST_F(PoolTesting, StdStringTest) {
+	pool<std::string> sspool(10); 
+	//char a[] = "abc", b[] = "bcd", c[] = "cde", d[] = "def";
+	std::string str_a{ "abc" };
+	for (size_t i = 0; i < 10; ++i) {
+		//switch (i % 4) {
+		//	case 0: sspool.alloc(a);
+		//	        break;
+		//	case 1: sspool.alloc(b);
+		//		    break;
+		//	case 2: sspool.alloc(c);
+		//			break;
+		//	case 3: sspool.alloc(d);
+		//			break;
+		//}
+		sspool.alloc(str_a);
+	}
+
+}
+
+TEST_F(PoolTesting, Point) {
+	pool<point> pointpool(10);
+	point temp;
+	point* pi = &temp;
+	for (size_t i = 0; i < 10; ++i) {
+		pi = pointpool.alloc();
+		*pi = point(i, i);
+		ASSERT_EQ(*pi, point(i, i));
+	}
+	for (size_t i = 0; i < 10; ++i) {
+		ASSERT_NO_THROW(pointpool.free(pi - i));
+	}
+	for (size_t i = 0; i < 10; ++i) {
+		pi = pointpool.alloc();
+		*pi = point(i, i);
+		ASSERT_EQ(*pi, point(i, i));
+	}
+}
+
+TEST_F(PoolTesting, PointVarAlloc) {
+	pool<point> pointpool(10);
+	point temp;
+	point* pi = &temp;
+	for (size_t i = 0; i < 10; ++i) {
+		pi = pointpool.alloc(i, i);
+		ASSERT_EQ(*pi, point(i, i));
+	}
+	for (size_t i = 0; i < 10; ++i) {
+		ASSERT_NO_THROW(pointpool.free(pi - i));
+	}
+}
+
+TEST_F(PoolTesting, Int) {
+	pool<int> intpool(10);
+	int temp;
+	int* pi = &temp;
+	for (size_t i = 0; i < 10; ++i) {
+		pi = intpool.alloc();
+		*pi = i;
+		ASSERT_EQ(*pi, i);
+	}
+	for (size_t i = 0; i < 10; ++i) {
+		ASSERT_NO_THROW(intpool.free(pi - i));
+	}
+	for (size_t i = 0; i < 10; ++i) {
+		pi = intpool.alloc();
+		*pi = i;
+		ASSERT_EQ(*pi, i);
+	}
+}
+
+TEST_F(PoolTesting, IntThrows) {
+	pool<int> intpool(1);
+	int * pi = intpool.alloc();
+	ASSERT_ANY_THROW(pi = intpool.alloc());
+	int out;
+	ASSERT_ANY_THROW(intpool.free(&out));
+}
 
 int main(int argc, char** argv) {
 	::testing::InitGoogleTest(&argc, argv);
