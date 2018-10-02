@@ -6,20 +6,9 @@
 
 #include <crtdbg.h> 
 
-#include "persons.h"
+//#include "persons.h"
+#include "testclass.h"
 
-class point final {
-public:
-	int x, y;
-	point() {
-		x = 0; 
-		y = 0;
-	}
-	point(int x, int y) {
-		this->x = x;
-		this->y = y;
-	}
-};
 
 bool operator == (const point& p1, const point&p2) {
 	return(p1.x == p2.x && p1.y == p2.y);
@@ -42,6 +31,15 @@ TEST_F(PoolTesting, CharAsterTest) {
 	pool<char*> charastpool(10);
 	for (size_t i = 0; i < 10; ++i) {
 		charastpool.alloc("gsg");
+	}
+	for (size_t i = 5; i < 9; ++i) {
+		charastpool.free(&charastpool[i]);
+	}
+	for (size_t i = 0; i < 4; ++i) {
+		charastpool.alloc("gsg");
+	}
+	for (size_t i = 0; i < 10; ++i) {
+		charastpool.free(&charastpool[i]);
 	}
 }
 

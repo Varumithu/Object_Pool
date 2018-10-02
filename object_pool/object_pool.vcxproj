@@ -122,11 +122,13 @@
     <ClInclude Include="..\..\template_sort\template_selsort\persons.h" />
     <ClInclude Include="pool.h" />
     <ClInclude Include="poolex.h" />
+    <ClInclude Include="testclass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\googletest-master\googletest-master\googletest\src\gtest-all.cc" />
     <ClCompile Include="..\..\template_sort\template_selsort\person.cpp" />
     <ClCompile Include="test.cpp" />
+    <ClCompile Include="testclass.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

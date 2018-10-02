@@ -24,6 +24,9 @@
     <ClInclude Include="..\..\template_sort\template_selsort\persons.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="testclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="test.cpp">
@@ -33,6 +36,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\template_sort\template_selsort\person.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -2,28 +2,37 @@
 #define _MYPOOLDOTH_
 
 #include <exception>
+#include <set>
 
 #include "poolex.h"
 
 template <class T>
 class pool final {
+private:
+	using type = std::remove_reference_t<T>;
+	std::set<type*> free_pointers;
 public:
 	pool(size_t amount){
-		this->place = static_cast<T*>(operator new[](amount * sizeof(T)));
+		this->place = static_cast<type*>(operator new[](amount * sizeof(T)));
 		this->amount = amount;
 		this->occupied = 0;
+		for (type* poi = place; poi != place + amount; ++poi) {
+			this->free_pointers.insert(poi);
+		}
 	}
 	~pool() {
 		for (size_t i = 0; i < occupied; ++i) {
-			(place + occupied)->~T();
+			(place + i)->~type();
 		}
 		delete[] this->place;
 	}
-	std::remove_reference_t<T> * alloc() {
+	type * alloc() {
 		if (occupied < amount){
-			*(this->place + occupied) = T();
+			type* poi = *(this->free_pointers.begin());
+			this->free_pointers.erase(this->free_pointers.begin());
 			++occupied;
-			return place + occupied - 1;
+			*poi = type();
+			return poi;
 		}
 		else {
 			PoolAllocException ex;
@@ -31,12 +40,14 @@ public:
 		}
 	}
 
-	template <class... Args>
-	std::remove_reference_t<T> * alloc(Args&&... args) {
+	template <typename... Args>
+	type * alloc(Args... args) {
 		if (occupied < amount) {
-			*(this->place + occupied) = T(args...);
+			type* poi = *(this->free_pointers.begin());
+			this->free_pointers.erase(this->free_pointers.begin());
 			++occupied;
-			return place + occupied - 1;
+			*poi = type(args...);
+			return poi;
 		}
 		else {
 			PoolAllocException ex;
@@ -44,29 +55,25 @@ public:
 		}
 	}
 
-	void free(T* obj) {
+	void free(type* obj) {
 		if (obj >= this->place && obj < this->place + amount) {
-			if (obj < this->place + occupied) {
-				(*obj).~T();
-				for (T* cur = obj + 1; cur != this->place + occupied; ++cur) {
-					*(cur - 1) = *cur;
-				}
-				--occupied;
-			}
-			// I could throw exception in this case also, but i think who cares right? Let the user free what's free alreaady.
+			obj->~type();
+			--occupied;
+			this->free_pointers.insert(obj);
 		}
 		else {
 			ObjOutsidePool ex;
 			throw ex;
 		}
 	}
-	std::remove_reference_t<T> & operator [] (size_t ind) {
+	type& operator [] (size_t ind) {
 		return *(place + ind);
 	}
 private:
 	T * place;
 	size_t occupied;
 	size_t amount;
+
 };
 
 
