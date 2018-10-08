@@ -28,21 +28,21 @@ public:
 	_CrtMemState startup;
 };
 
-//TEST_F(PoolTesting, CharAsterTest) {
-//	pool<const char*> charastpool(10);
-//	for (size_t i = 0; i < 10; ++i) {
-//		charastpool.alloc("gsg");
-//	}
-//	for (size_t i = 5; i < 9; ++i) {
-//		charastpool.free(&charastpool[i]);
-//	}
-//	for (size_t i = 0; i < 4; ++i) {
-//		charastpool.alloc("gsg");
-//	}
-//	for (size_t i = 0; i < 10; ++i) {
-//		charastpool.free(&charastpool[i]);
-//	}
-//}
+TEST_F(PoolTesting, CharAsterTest) {
+	pool<const char*> charastpool(10);
+	for (size_t i = 0; i < 10; ++i) {
+		charastpool.alloc("gsg");
+	}
+	for (size_t i = 5; i < 9; ++i) {
+		charastpool.free(&charastpool[i]);
+	}
+	for (size_t i = 0; i < 4; ++i) {
+		charastpool.alloc("gsg");
+	}
+	for (size_t i = 0; i < 10; ++i) {
+		charastpool.free(&charastpool[i]);
+	}
+}
 
 TEST_F(PoolTesting, ArrayTest) {
 	pool<int[3]> arpool(10);
@@ -125,20 +125,19 @@ TEST_F(PoolTesting, PointVarAlloc) {
 
 TEST_F(PoolTesting, Int) {
 	pool<int> intpool(10);
-	int temp;
-	int* pi = &temp;
+	int* pi[10];
 	for (size_t i = 0; i < 10; ++i) {
-		pi = intpool.alloc();
-		*pi = i;
-		ASSERT_EQ(*pi, i);
+		pi[i] = intpool.alloc();
+		*(pi[i]) = i;
+		ASSERT_EQ(*(pi[i]), i);
 	}
 	for (size_t i = 0; i < 10; ++i) {
-		ASSERT_NO_THROW(intpool.free(pi - i));
+		ASSERT_NO_THROW(intpool.free(pi[i]));
 	}
 	for (size_t i = 0; i < 10; ++i) {
-		pi = intpool.alloc();
-		*pi = i;
-		ASSERT_EQ(*pi, i);
+		pi[i] = intpool.alloc();
+		*(pi[i]) = i;
+		ASSERT_EQ(*(pi[i]), i);
 	}
 }
 
@@ -148,6 +147,25 @@ TEST_F(PoolTesting, IntThrows) {
 	ASSERT_ANY_THROW(pi = intpool.alloc());
 	int out;
 	ASSERT_ANY_THROW(intpool.free(&out));
+}
+
+TEST_F(PoolTesting, size_tRefTest) {
+	pool<int&> intpool(10);
+	int* pi[10];
+	for (size_t i = 0; i < 10; ++i) {
+		size_t& intref = i;
+		pi[i] = intpool.alloc();
+		*(pi[i]) = intref;
+		ASSERT_EQ(*(pi[i]), i);
+	}
+	for (size_t i = 0; i < 10; ++i) {
+		ASSERT_NO_THROW(intpool.free(pi[i]));
+	}
+	for (size_t i = 0; i < 10; ++i) {
+		pi[i] = intpool.alloc();
+		*(pi[i]) = i;
+		ASSERT_EQ(*(pi[i]), i);
+	}
 }
 
 int main(int argc, char** argv) {

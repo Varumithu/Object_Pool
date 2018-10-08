@@ -2,8 +2,9 @@
 #define _MYPOOLDOTH_
 
 #include <exception>
-#include <set>
 #include <cstring>
+#include <vector>
+#include <iterator>
 
 #include "poolex.h"
 
@@ -11,39 +12,45 @@ template <class T>
 class pool final {
 private:
 	using type = std::remove_reference_t<T>;
-	std::set<type*> free_pointers;
-	T * place;
+	type * place;
 	size_t occupied;
 	size_t amount;
+	std::vector<bool> isfree;
 
 public:
-	pool(size_t amount){
+	pool(size_t amount) {
 		this->place = static_cast<type*>(operator new[](amount * sizeof(T)));
 		this->amount = amount;
 		this->occupied = 0;
-		for (type* poi = place; poi != place + amount; ++poi) {
-			this->free_pointers.insert(poi);
+		for (size_t i = 0; i < amount; ++i) {
+			this->isfree.emplace_back(true);
 		}
 	}
 	~pool() {
 		for (size_t i = 0; i < occupied; ++i) {
-			if (this->free_pointers.find(this->place + i) == this->free_pointers.end()) {
+			if (isfree[i] == false) {
 				(place + i)->~type();
 			}
 		}
-		operator delete[] (this->place);
+		operator delete[](this->place);
 	}
 
 
 	template<typename U = type>
 	std::enable_if_t<std::is_array_v<U>, U*>
-	alloc(U* that) {
+		alloc(U* that) {
 		if (occupied < amount) {
-			U* poi = *(this->free_pointers.begin());
-			this->free_pointers.erase(this->free_pointers.begin());
+			size_t al_ind;
+			for (size_t i = 0; i < amount; ++i) {
+				if (isfree[i]) {
+					al_ind = i;
+					break;
+				}
+			}
+			isfree[al_ind] = false;
 			++occupied;
-			std::memmove(poi, that, sizeof(U));
-			return poi;
+			std::memmove(place + al_ind, that, sizeof(U));
+			return place + al_ind;
 		}
 		else {
 			PoolAllocException ex;
@@ -54,11 +61,17 @@ public:
 	template <typename U = type, typename... Args>
 	std::enable_if_t<!std::is_array_v<U>, U*>  alloc(Args... args) {
 		if (occupied < amount) {
-			U* poi = *(this->free_pointers.begin());
-			this->free_pointers.erase(this->free_pointers.begin());
+			size_t al_ind;
+			for (size_t i = 0; i < amount; ++i) {
+				if (isfree[i]) {
+					al_ind = i;
+					break;
+				}
+			}
+			isfree[al_ind] = false;
 			++occupied;
-			new (poi) U(args...);
-			return poi;
+			new (place + al_ind) U(std::forward<Args>(args)...);
+			return place + al_ind;
 		}
 		else {
 			PoolAllocException ex;
@@ -68,10 +81,10 @@ public:
 
 
 	void free(type* obj) {
-		if (obj >= this->place && obj < this->place + amount) {
+		if ((obj < place + amount && obj >= place) && isfree[std::distance(place, obj)] == false) {
 			obj->~type();
 			--occupied;
-			this->free_pointers.insert(obj);
+			isfree[std::distance(place, obj)] = true;
 		}
 		else {
 			ObjOutsidePool ex;
