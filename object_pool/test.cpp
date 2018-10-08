@@ -1,4 +1,3 @@
-
 #include "pool.h"
 
 #include <iostream>
@@ -7,7 +6,6 @@
 
 #include <crtdbg.h> 
 
-//#include "persons.h"
 #include "testclass.h"
 
 
@@ -56,16 +54,6 @@ TEST_F(PoolTesting, StupidStringTest) {
 	pool<stupidString> sspool(10); 
 	char a[] = "abc", b[] = "bcd", c[] = "cde", d[] = "def";
 	for (size_t i = 0; i < 10; ++i) {
-		//switch (i % 4) {
-		//	case 0: sspool.alloc(a);
-		//	        break;
-		//	case 1: sspool.alloc(b);
-		//		    break;
-		//	case 2: sspool.alloc(c);
-		//			break;
-		//	case 3: sspool.alloc(d);
-		//			break;
-		//}
 		ASSERT_NO_THROW(sspool.alloc(a));
 	}
 
@@ -73,19 +61,8 @@ TEST_F(PoolTesting, StupidStringTest) {
 
 TEST_F(PoolTesting, StdStringTest) {
 	pool<std::string> sspool(10); 
-	//char a[] = "abc", b[] = "bcd", c[] = "cde", d[] = "def";
 	std::string str_a{ "abc" };
 	for (size_t i = 0; i < 10; ++i) {
-		//switch (i % 4) {
-		//	case 0: sspool.alloc(a);
-		//	        break;
-		//	case 1: sspool.alloc(b);
-		//		    break;
-		//	case 2: sspool.alloc(c);
-		//			break;
-		//	case 3: sspool.alloc(d);
-		//			break;
-		//}
 		sspool.alloc(str_a);
 	}
 
@@ -149,7 +126,7 @@ TEST_F(PoolTesting, IntThrows) {
 	ASSERT_ANY_THROW(intpool.free(&out));
 }
 
-TEST_F(PoolTesting, size_tRefTest) {
+TEST_F(PoolTesting, intRefTest) {
 	pool<int&> intpool(10);
 	int* pi[10];
 	for (size_t i = 0; i < 10; ++i) {
