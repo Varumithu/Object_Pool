@@ -5,6 +5,7 @@
 #include <cstring>
 #include <vector>
 #include <iterator>
+#include <type_traits>
 
 #include "poolex.h"
 
@@ -16,6 +17,11 @@ private:
 	size_t occupied;
 	size_t amount;
 	std::vector<bool> isfree;
+
+	template <typename... Args>
+	void array_copy(size_t al_ind, type * that, Args... args) {
+		std::memmove(place + al_ind, that, sizeof(type));
+	}
 
 public:
 	pool(size_t amount) {
@@ -35,10 +41,9 @@ public:
 		operator delete[](this->place);
 	}
 
-
-	template<typename U = type>
-	std::enable_if_t<std::is_array_v<U>, U*>
-		alloc(U* that) {
+public:
+	template <typename... Args>
+	type* alloc(Args... args) {
 		if (occupied < amount) {
 			size_t al_ind;
 			for (size_t i = 0; i < amount; ++i) {
@@ -49,33 +54,16 @@ public:
 			}
 			isfree[al_ind] = false;
 			++occupied;
-			std::memmove(place + al_ind, that, sizeof(U));
-			return place + al_ind;
-		}
-		else {
-			PoolAllocException ex;
-			throw ex;
-		}
-	}
-
-	template <typename U = type, typename... Args>
-	std::enable_if_t<!std::is_array_v<U>, U*>  alloc(Args... args) {
-		if (occupied < amount) {
-			size_t al_ind;
-			for (size_t i = 0; i < amount; ++i) {
-				if (isfree[i]) {
-					al_ind = i;
-					break;
-				}
+			if constexpr (std::is_array_v<type>) {
+				array_copy(al_ind, args...);
 			}
-			isfree[al_ind] = false;
-			++occupied;
-			new (place + al_ind) U(std::forward<Args>(args)...);
+			else {
+				new (place + al_ind) type(std::forward<Args>(args)...);
+			}
 			return place + al_ind;
 		}
 		else {
-			PoolAllocException ex;
-			throw ex;
+			throw PoolAllocException();
 		}
 	}
 
@@ -87,8 +75,8 @@ public:
 			isfree[std::distance(place, obj)] = true;
 		}
 		else {
-			ObjOutsidePool ex;
-			throw ex;
+			
+			throw ObjOutsidePool();
 		}
 	}
 	type& operator [] (size_t ind) {
