@@ -50,6 +50,14 @@ TEST_F(PoolTesting, ArrayTest) {
 	}
 }
 
+TEST_F(PoolTesting, ArrayTestEmptyAlloc) {
+	pool<int[3]> arpool(10);
+	int a[3]{ 1, 2, 3 };
+	for (size_t i = 0; i < 10; ++i) {
+		arpool.alloc();
+	}
+}
+
 TEST_F(PoolTesting, StupidStringTest) {
 	pool<stupidString> sspool(10); 
 	char a[] = "abc", b[] = "bcd", c[] = "cde", d[] = "def";
