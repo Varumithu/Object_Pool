@@ -16,11 +16,16 @@ private:
 	type * place;
 	size_t occupied;
 	size_t amount;
-	std::vector<bool> isfree;
+	std::vector<int> isfree;
 
 	template <typename... Args>
 	void array_copy(size_t al_ind, type * that, Args&&... args) {
 		std::memmove(place + al_ind, that, sizeof(type));
+	}
+
+	template <typename... Args>
+	void array_copy(size_t al_ind, type& that, Args&&... args) {
+		std::memmove(place + al_ind, &that, sizeof(type));
 	}
 
 	void array_copy(size_t al_ind) {
@@ -33,12 +38,12 @@ public:
 		this->amount = amount;
 		this->occupied = 0;
 		for (size_t i = 0; i < amount; ++i) {
-			this->isfree.emplace_back(true);
+			this->isfree.emplace_back(1);
 		}
 	}
 	~pool() {
 		for (size_t i = 0; i < occupied; ++i) {
-			if (isfree[i] == false) {
+			if (isfree[i] == 0) {
 				(place + i)->~type();
 			}
 		}
@@ -47,16 +52,16 @@ public:
 
 public:
 	template <typename... Args>
-	type* alloc(Args... args) {
+	type* alloc(Args&&... args) {
 		if (occupied < amount) {
 			size_t al_ind;
 			for (size_t i = 0; i < amount; ++i) {
-				if (isfree[i]) {
+				if (isfree[i] == 1) {
 					al_ind = i;
 					break;
 				}
 			}
-			isfree[al_ind] = false;
+			isfree[al_ind] = 0;
 			++occupied;
 			if constexpr (std::is_array_v<type>) {
 				array_copy(al_ind, args...);
@@ -73,10 +78,12 @@ public:
 
 
 	void free(type* obj) {
-		if ((obj < place + amount && obj >= place) && isfree[std::distance(place, obj)] == false) {
-			obj->~type();
-			--occupied;
-			isfree[std::distance(place, obj)] = true;
+		if (obj < place + amount && obj >= place) {
+			if (isfree[std::distance(place, obj)] == 0) {
+				obj->~type();
+				--occupied;
+				isfree[std::distance(place, obj)] = 1;
+			}
 		}
 		else {
 			
