@@ -24,8 +24,10 @@ private:
 	}
 
 	template <typename... Args>
-	void array_copy(size_t al_ind, type& that, Args&&... args) {
-		std::memmove(place + al_ind, &that, sizeof(type));
+	void array_copy(size_t al_ind, type&& that, Args&&... args) {
+		for (auto c& : that) {
+			new (&c) c(std::forward<Args>(args)...);
+		}
 	}
 
 	void array_copy(size_t al_ind) {
