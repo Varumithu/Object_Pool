@@ -13,6 +13,7 @@ template <class T>
 class pool final {
 private:
 	using type = std::remove_reference_t<T>;
+	using element = typename std::remove_all_extents_t<type>;
 	type * place;
 	size_t occupied;
 	size_t amount;
@@ -25,8 +26,10 @@ private:
 
 	template <typename... Args>
 	void array_copy(size_t al_ind, type&& that, Args&&... args) {
-		for (auto c& : that) {
-			new (&c) c(std::forward<Args>(args)...);
+		size_t i = 0;
+		for (auto& c : *(place + al_ind)) {
+			new (&c) element(that[i]);
+			++i;
 		}
 	}
 
@@ -46,7 +49,14 @@ public:
 	~pool() {
 		for (size_t i = 0; i < occupied; ++i) {
 			if (isfree[i] == 0) {
-				(place + i)->~type();
+				if constexpr (!std::is_array_v<type>) {
+					(place + i)->~type();
+				}
+				else {
+					for (auto& c : *(place + i)) {
+						c.~element();
+					}
+				}
 			}
 		}
 		operator delete[](this->place);
@@ -66,7 +76,7 @@ public:
 			isfree[al_ind] = 0;
 			++occupied;
 			if constexpr (std::is_array_v<type>) {
-				array_copy(al_ind, args...);
+				array_copy(al_ind, std::forward<Args>(args)...);
 			}
 			else {
 				new (place + al_ind) type(std::forward<Args>(args)...);
@@ -80,11 +90,23 @@ public:
 
 
 	void free(type* obj) {
+
 		if (obj < place + amount && obj >= place) {
 			if (isfree[std::distance(place, obj)] == 0) {
-				obj->~type();
-				--occupied;
-				isfree[std::distance(place, obj)] = 1;
+				if constexpr (!std::is_array_v<type>) {
+					obj->~type();
+					--occupied;
+					isfree[std::distance(place, obj)] = 1;
+
+				}
+				else {
+					for (auto& c : *obj) {
+						c.~element();
+						
+					}
+					isfree[std::distance(place, obj)] = 1;
+					--occupied;
+				}
 			}
 		}
 		else {
