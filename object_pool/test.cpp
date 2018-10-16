@@ -166,10 +166,35 @@ TEST_F(PoolTesting, intRefTest) {
 }
 
 TEST_F(PoolTesting, ArrayOfStringsTest) {
-	pool<stupidString[3]> stringarrpool(1);
+	pool<stupidString[3]> stringarrpool(5);
 	stupidString strarr[3] = {"abc", "bcd", "cde"};
 	auto res = stringarrpool.alloc(strarr);
+	auto res2 = stringarrpool.alloc(strarr);
 	stringarrpool.free(res);
+	stringarrpool.free(res2);
+	stringarrpool.alloc(strarr);
+	stringarrpool.alloc(strarr);
+	res = stringarrpool.alloc(strarr);
+	stringarrpool.alloc(strarr);
+	stringarrpool.free(res);
+}
+
+TEST_F(PoolTesting, ArrayOfPointersTest) {
+	pool<stupidString*[3]> pool(5);
+	stupidString strarr[3] = { "abc", "bcd", "cde" };
+	stupidString* parr[3] = { &strarr[0], &strarr[1], &strarr[2] };	
+	
+	auto res1 = pool.alloc(parr);
+	pool.free(res1);
+}
+
+TEST_F(PoolTesting, MultDimArrayOfPointersTest) {
+	pool<stupidString[2][3]> pool(5);
+	stupidString strarr[2][3] = { { "abc", "bcd", "cde" }, { "abc", "bcd", "cde" } };
+	stupidString* parr[2][3] = { {&strarr[0][0], &strarr[0][1], &strarr[0][2]}, {&strarr[1][0], &strarr[1][1], &strarr[1][2]} };
+
+	auto res1 = pool.alloc(strarr);
+	pool.free(res1);
 }
 
 int main(int argc, char** argv) {

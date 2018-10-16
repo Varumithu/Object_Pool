@@ -13,7 +13,7 @@ template <class T>
 class pool final {
 private:
 	using type = std::remove_reference_t<T>;
-	using element = typename std::remove_all_extents_t<type>;
+	using element = std::remove_all_extents_t<type>;
 	type * place;
 	size_t occupied;
 	size_t amount;
@@ -38,22 +38,22 @@ private:
 	}
 
 public:
-	pool(size_t amount) {
-		this->place = static_cast<type*>(operator new[](amount * sizeof(T)));
-		this->amount = amount;
-		this->occupied = 0;
+	pool(size_t amount) : amount(amount) {
+		place = static_cast<type*>(operator new[](amount * sizeof(T)));
+		//amount = amount;
+		occupied = 0;
 		for (size_t i = 0; i < amount; ++i) {
-			this->isfree.emplace_back(1);
+			isfree.emplace_back(1);
 		}
 	}
 	~pool() {
-		for (size_t i = 0; i < occupied; ++i) {
+		for (size_t i = 0; i < amount; ++i) {
 			if (isfree[i] == 0) {
 				if constexpr (!std::is_array_v<type>) {
 					(place + i)->~type();
 				}
 				else {
-					for (auto& c : *(place + i)) {
+					for (element& c : *(place + i)) {
 						c.~element();
 					}
 				}
@@ -100,9 +100,8 @@ public:
 
 				}
 				else {
-					for (auto& c : *obj) {
+					for (element& c : *obj) {
 						c.~element();
-						
 					}
 					isfree[std::distance(place, obj)] = 1;
 					--occupied;
