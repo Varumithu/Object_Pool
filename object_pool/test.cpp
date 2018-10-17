@@ -188,7 +188,7 @@ TEST_F(PoolTesting, ArrayOfPointersTest) {
 	pool.free(res1);
 }
 
-TEST_F(PoolTesting, MultDimArrayOfPointersTest) {
+TEST_F(PoolTesting, MultDimArrayTest) {
 	pool<stupidString[2][3]> pool(5);
 	stupidString strarr[2][3] = { { "abc", "bcd", "cde" }, { "abc", "bcd", "cde" } };
 	stupidString* parr[2][3] = { {&strarr[0][0], &strarr[0][1], &strarr[0][2]}, {&strarr[1][0], &strarr[1][1], &strarr[1][2]} };

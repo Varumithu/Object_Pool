@@ -27,9 +27,11 @@ private:
 	template <typename... Args>
 	void array_copy(size_t al_ind, type&& that, Args&&... args) {
 		size_t i = 0;
-		for (auto& c : *(place + al_ind)) {
-			new (&c) element(that[i]);
-			++i;
+		type tt;
+		element te;
+		for (size_t i = 0; i < sizeof(tt) / sizeof(te); ++i) {
+			element* c = reinterpret_cast<element*>(place + al_ind) + i;
+			new (c) element(*(reinterpret_cast<element*>(that) + i));
 		}
 	}
 
@@ -53,8 +55,11 @@ public:
 					(place + i)->~type();
 				}
 				else {
-					for (element& c : *(place + i)) {
-						c.~element();
+					type tt;
+					element te;
+					for (size_t j = 0; j < sizeof(tt) / sizeof(te); ++j) {
+						element* c = reinterpret_cast<element*>(place + i) + j;
+						c->~element();
 					}
 				}
 			}
@@ -100,8 +105,11 @@ public:
 
 				}
 				else {
-					for (element& c : *obj) {
-						c.~element();
+					type tt;
+					element te;
+					for (size_t i = 0; i < sizeof(tt) / sizeof(te); ++i) {
+						element* c = reinterpret_cast<element*>(obj) + i;
+						c->~element();
 					}
 					isfree[std::distance(place, obj)] = 1;
 					--occupied;
