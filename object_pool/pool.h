@@ -42,11 +42,12 @@ private:
 public:
 	pool(size_t amount) : amount(amount) {
 		place = static_cast<type*>(operator new[](amount * sizeof(T)));
-		//amount = amount;
 		occupied = 0;
-		for (size_t i = 0; i < amount; ++i) {
+	  /*for (size_t i = 0; i < amount; ++i) {
 			isfree.emplace_back(1);
-		}
+		}*/
+		isfree.resize(amount);
+		std::fill_n(isfree.begin(), amount, 1);
 	}
 	~pool() {
 		for (size_t i = 0; i < amount; ++i) {
