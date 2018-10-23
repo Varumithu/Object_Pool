@@ -195,7 +195,28 @@ TEST_F(PoolTesting, MultDimArrayTest) {
 
 	auto res1 = pool.alloc(strarr);
 	pool.free(res1);
+	res1 = pool.alloc(strarr);
+	res1 = pool.alloc(strarr);
+	res1 = pool.alloc();
+	res1 = pool.alloc(strarr);
+	pool.alloc();
+	pool.free(res1);
+	pool.alloc(strarr);
 }
+
+
+
+TEST_F(PoolTesting, MinusOneAndZeroTest) {
+	//pool<int> minuspool(-1);
+	pool<int> zeropool(0);
+	ASSERT_ANY_THROW(zeropool.alloc(5));
+}
+
+TEST_F(PoolTesting, PoolOfPools) {
+	pool<pool<pool<int>>> pool_of_pools_of_pools_of_int(3);
+	//pool_of_pools_of_pools_of_int.alloc();
+}
+
 
 int main(int argc, char** argv) {
 	::testing::InitGoogleTest(&argc, argv);

@@ -17,7 +17,7 @@ private:
 	type * place;
 	size_t occupied;
 	size_t amount;
-	std::vector<int> isfree;
+	std::vector<bool> isfree;
 
 	template <typename... Args>
 	void array_copy(size_t al_ind, type * that, Args&&... args) {
@@ -27,31 +27,31 @@ private:
 	template <typename... Args>
 	void array_copy(size_t al_ind, type&& that, Args&&... args) {
 		size_t i = 0;
-		type tt;
-		element te;
-		for (size_t i = 0; i < sizeof(tt) / sizeof(te); ++i) {
+		for (size_t i = 0; i < sizeof(type) / sizeof(element); ++i) {
 			element* c = reinterpret_cast<element*>(place + al_ind) + i;
 			new (c) element(*(reinterpret_cast<element*>(that) + i));
 		}
 	}
 
 	void array_copy(size_t al_ind) {
-
+		size_t i = 0;
+		for (size_t i = 0; i < sizeof(type) / sizeof(element); ++i) {
+			element* c = reinterpret_cast<element*>(place + al_ind) + i;
+			new (c) element();
+		}
 	}
 
 public:
 	pool(size_t amount) : amount(amount) {
 		place = static_cast<type*>(operator new[](amount * sizeof(T)));
 		occupied = 0;
-	  /*for (size_t i = 0; i < amount; ++i) {
-			isfree.emplace_back(1);
-		}*/
-		isfree.resize(amount);
-		std::fill_n(isfree.begin(), amount, 1);
+		isfree = std::vector<bool>(amount, true);
+
 	}
+	//pool() : amount(0), place(nullptr) {}
 	~pool() {
 		for (size_t i = 0; i < amount; ++i) {
-			if (isfree[i] == 0) {
+			if (isfree[i] == false) {
 				if constexpr (!std::is_array_v<type>) {
 					(place + i)->~type();
 				}
@@ -74,12 +74,12 @@ public:
 		if (occupied < amount) {
 			size_t al_ind;
 			for (size_t i = 0; i < amount; ++i) {
-				if (isfree[i] == 1) {
+				if (isfree[i] == true) {
 					al_ind = i;
 					break;
 				}
 			}
-			isfree[al_ind] = 0;
+			isfree[al_ind] = false;
 			++occupied;
 			if constexpr (std::is_array_v<type>) {
 				array_copy(al_ind, std::forward<Args>(args)...);
@@ -96,13 +96,14 @@ public:
 
 
 	void free(type* obj) {
-
+		size_t index;
 		if (obj < place + amount && obj >= place) {
-			if (isfree[std::distance(place, obj)] == 0) {
+			index = std::distance(place, obj);
+			if (isfree[index] == false) {
 				if constexpr (!std::is_array_v<type>) {
 					obj->~type();
 					--occupied;
-					isfree[std::distance(place, obj)] = 1;
+					isfree[index] = true;
 
 				}
 				else {
@@ -112,7 +113,7 @@ public:
 						element* c = reinterpret_cast<element*>(obj) + i;
 						c->~element();
 					}
-					isfree[std::distance(place, obj)] = 1;
+					isfree[index] = true;
 					--occupied;
 				}
 			}
